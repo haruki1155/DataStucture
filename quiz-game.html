@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 6 Quiz Game - Data Collection</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --card: rgba(15, 23, 42, 0.82);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --wrong: #ef4444;
+      --warn: #f59e0b;
+      --border: rgba(148, 163, 184, 0.18);
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.15), transparent 24%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #bae6fd;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .mini-stat {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .mini-stat .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .mini-stat strong {
+      font-size: 1.1rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      font-weight: 700;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), #0ea5e9);
+      color: #082f49;
+      padding: 14px 18px;
+      border-radius: 14px;
+      box-shadow: 0 12px 28px rgba(14, 165, 233, 0.22);
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      border-radius: 14px;
+    }
+
+    .game-wrap {
+      margin-top: 22px;
+      display: none;
+      gap: 18px;
+    }
+
+    .game-wrap.active {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar,
+    .quiz-panel {
+      padding: 22px;
+    }
+
+    .sidebar {
+      display: grid;
+      align-content: start;
+      gap: 16px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    .stat-box .k {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .stat-box .v {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .lives {
+      letter-spacing: 6px;
+      font-size: 1.4rem;
+    }
+
+    .topic-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .quiz-panel {
+      display: grid;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .progress-shell {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.25s ease;
+    }
+
+    .question-chip {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #bbf7d0;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .question {
+      font-size: clamp(1.15rem, 2vw, 1.55rem);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer {
+      width: 100%;
+      text-align: left;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.045);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .answer small {
+      display: inline-block;
+      min-width: 26px;
+      margin-right: 8px;
+      color: #7dd3fc;
+      font-weight: 700;
+    }
+
+    .answer:hover {
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    }
+
+    .answer.correct {
+      border-color: rgba(34, 197, 94, 0.8);
+      background: rgba(34, 197, 94, 0.14);
+    }
+
+    .answer.wrong {
+      border-color: rgba(239, 68, 68, 0.75);
+      background: rgba(239, 68, 68, 0.14);
+    }
+
+    .answer:disabled {
+      cursor: default;
+      opacity: 1;
+      transform: none;
+    }
+
+    .feedback {
+      display: none;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.045);
+    }
+
+    .feedback.active {
+      display: block;
+    }
+
+    .feedback h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+
+    .feedback p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .feedback.good h3 { color: #86efac; }
+    .feedback.bad h3 { color: #fca5a5; }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+
+    .result {
+      display: none;
+      margin-top: 22px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .result.active {
+      display: block;
+    }
+
+    .result h2 {
+      margin-top: 0;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+    }
+
+    .score-big {
+      font-size: clamp(2.3rem, 5vw, 4rem);
+      font-weight: 800;
+      margin: 10px 0 14px;
+      color: #7dd3fc;
+    }
+
+    .result p {
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto 18px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin: 20px 0 24px;
+      text-align: left;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 900px) {
+      .game-wrap.active {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+
+      .quiz-panel {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero card" id="startScreen">
+      <div class="title">
+        <span class="badge">Interactive HTML + CSS Quiz Game</span>
+        <h1>Data Collection Quest</h1>
+      </div>
+
+      <p>
+        A simple learning game based only on <strong>Lesson 6: Data Collection</strong>. Answer 25 quiz items while learning about data collection methods, research design, population and sample, Slovin's formula, sampling techniques, questionnaires, and Likert scale.
+      </p>
+
+      <div class="mini-grid">
+        <div class="mini-stat">
+          <span class="label">Game Style</span>
+          <strong>Multiple Choice Quiz</strong>
+        </div>
+        <div class="mini-stat">
+          <span class="label">Total Questions</span>
+          <strong>25 Items</strong>
+        </div>
+        <div class="mini-stat">
+          <span class="label">Lives</span>
+          <strong>3 Hearts</strong>
+        </div>
+        <div class="mini-stat">
+          <span class="label">Learning Mode</span>
+          <strong>Answer + Explanation</strong>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="primary" id="startBtn">Start Game</button>
+        <button class="secondary" id="howBtn">How to Play</button>
+      </div>
+
+      <div class="feedback active hidden" id="howPanel">
+        <h3>How to play</h3>
+        <p>
+          Choose one answer per question. Every correct answer gives you points. Wrong answers remove one life. After each item, you will see a short explanation so you learn while playing. Finish all 25 items or survive until the end.
+        </p>
+      </div>
+    </section>
+
+    <section class="game-wrap active hidden" id="gameWrap">
+      <aside class="sidebar card">
+        <div class="stat-box">
+          <span class="k">Score</span>
+          <div class="v" id="scoreValue">0</div>
+        </div>
+        <div class="stat-box">
+          <span class="k">Lives</span>
+          <div class="v lives" id="livesValue">❤❤❤</div>
+        </div>
+        <div class="stat-box">
+          <span class="k">Question</span>
+          <div class="v" id="questionCounter">1 / 25</div>
+        </div>
+        <div class="stat-box">
+          <span class="k">Topics inside this game</span>
+          <ul class="topic-list">
+            <li>Meaning of data collection</li>
+            <li>Research design types</li>
+            <li>Population and sample</li>
+            <li>Slovin's formula</li>
+            <li>Probability sampling</li>
+            <li>Non-probability sampling</li>
+            <li>Questionnaire design</li>
+            <li>Likert scale</li>
+          </ul>
+        </div>
+      </aside>
+
+      <main class="quiz-panel card">
+        <div class="topbar">
+          <span class="question-chip" id="topicChip">Lesson 6 Challenge</span>
+          <span class="pill" id="statusText">Choose the best answer.</span>
+        </div>
+
+        <div class="progress-shell">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <h2 class="question" id="questionText"></h2>
+
+        <div class="answers" id="answersBox"></div>
+
+        <div class="feedback" id="feedbackBox">
+          <h3 id="feedbackTitle"></h3>
+          <p id="feedbackText"></p>
+        </div>
+
+        <div class="controls">
+          <button class="primary hidden" id="nextBtn">Next Question</button>
+          <button class="secondary" id="restartBtn">Restart</button>
+        </div>
+      </main>
+    </section>
+
+    <section class="result card" id="resultScreen">
+      <span class="badge">Quiz Complete</span>
+      <h2 id="resultHeading">Great job!</h2>
+      <div class="score-big" id="finalScore">0</div>
+      <p id="resultMessage"></p>
+
+      <div class="result-grid">
+        <div class="stat-box">
+          <span class="k">Correct Answers</span>
+          <div class="v" id="correctCount">0</div>
+        </div>
+        <div class="stat-box">
+          <span class="k">Wrong Answers</span>
+          <div class="v" id="wrongCount">0</div>
+        </div>
+        <div class="stat-box">
+          <span class="k">Questions Played</span>
+          <div class="v" id="playedCount">0</div>
+        </div>
+        <div class="stat-box">
+          <span class="k">Mastery</span>
+          <div class="v" id="masteryText">-</div>
+        </div>
+      </div>
+
+      <div class="controls" style="justify-content:center;">
+        <button class="primary" id="playAgainBtn">Play Again</button>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Built for interactive studying from the uploaded PDF lesson only.
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        topic: "Data Collection",
+        question: "What is data collection?",
+        answers: [
+          "The process of editing charts for a report",
+          "The systematic process of gathering information needed to answer research questions or test hypotheses",
+          "The act of choosing only numerical data",
+          "The final stage of writing a conclusion"
+        ],
+        correct: 1,
+        explanation: "The lesson defines data collection as the systematic process of gathering information needed to answer research questions or test hypotheses."
+      },
+      {
+        topic: "Importance",
+        question: "Why is well-planned data collection important in research?",
+        answers: [
+          "Because it automatically makes all results perfect",
+          "Because it removes the need for objectives",
+          "Because poor data collection can make results inaccurate or misleading",
+          "Because it replaces data analysis"
+        ],
+        correct: 2,
+        explanation: "The PDF explains that without reliable and well-planned data collection, research results may become inaccurate or misleading."
+      },
+      {
+        topic: "Methods",
+        question: "Which data collection method is described as the most used tool because it allows researchers to collect responses from many participants efficiently?",
+        answers: [
+          "Experiments",
+          "Survey questionnaires",
+          "Focus group discussions",
+          "Observation only"
+        ],
+        correct: 1,
+        explanation: "The lesson states that survey questionnaires are the most used tool because they let researchers collect responses from many participants efficiently."
+      },
+      {
+        topic: "Steps",
+        question: "What is the first step in the step-by-step data collection process?",
+        answers: [
+          "Collect the data immediately",
+          "Define the aim of your research",
+          "Compute the final results",
+          "Publish the questionnaire"
+        ],
+        correct: 1,
+        explanation: "Step 1 in the lesson is to define the aim of the research, including the problem statement, objectives, and research design."
+      },
+      {
+        topic: "Research Design",
+        question: "What is a research design?",
+        answers: [
+          "A plan or framework used to conduct a research study",
+          "A list of final results only",
+          "A machine for collecting responses",
+          "A chart that compares respondents"
+        ],
+        correct: 0,
+        explanation: "The PDF defines research design as the plan or framework used to conduct a research study."
+      },
+      {
+        topic: "Qualitative",
+        question: "Qualitative research mainly focuses on what kind of data?",
+        answers: [
+          "Only percentages and formulas",
+          "Descriptive data about experiences, opinions, and behaviors",
+          "Purely financial records",
+          "Randomized tables only"
+        ],
+        correct: 1,
+        explanation: "Qualitative research focuses on understanding experiences, opinions, and behaviors, using descriptive rather than numerical data."
+      },
+      {
+        topic: "Quantitative",
+        question: "Which description best matches quantitative research?",
+        answers: [
+          "It focuses on numerical data that can be analyzed statistically",
+          "It avoids questionnaires completely",
+          "It uses only interviews and observations",
+          "It studies only one participant at a time"
+        ],
+        correct: 0,
+        explanation: "The lesson says quantitative research focuses on numerical data that can be analyzed statistically, often through surveys and questionnaires."
+      },
+      {
+        topic: "Mixed Methods",
+        question: "What is mixed methods research?",
+        answers: [
+          "Research that ignores both words and numbers",
+          "Research that uses only one method but with two titles",
+          "Research that combines qualitative and quantitative approaches",
+          "Research that is done without respondents"
+        ],
+        correct: 2,
+        explanation: "Mixed methods research combines qualitative and quantitative approaches to provide both statistical results and deeper insights."
+      },
+      {
+        topic: "Population",
+        question: "In research, what does population mean?",
+        answers: [
+          "The entire group of individuals, objects, or events the researcher wants to study",
+          "Only the participants who answered quickly",
+          "A very small group selected for interviews",
+          "The total score of a survey"
+        ],
+        correct: 0,
+        explanation: "The lesson defines population as the entire group the researcher wants to study."
+      },
+      {
+        topic: "Sample",
+        question: "What is a sample?",
+        answers: [
+          "The whole population",
+          "A random chart used in the study",
+          "A subset or smaller group selected from the research population",
+          "A question format for Likert scale"
+        ],
+        correct: 2,
+        explanation: "A sample is the smaller group selected from the population to represent the larger group."
+      },
+      {
+        topic: "Sample Size",
+        question: "Which formula is used in the lesson to determine an appropriate sample size when little is known about the population's statistical behavior?",
+        answers: [
+          "Pearson's Formula",
+          "Slovin's Formula",
+          "Newton's Formula",
+          "Ratio Formula"
+        ],
+        correct: 1,
+        explanation: "The lesson introduces Slovin's Formula for determining sample size."
+      },
+      {
+        topic: "Slovin",
+        question: "In Slovin's Formula, what does e represent?",
+        answers: [
+          "Estimated age",
+          "Error margin or margin of error",
+          "Expected score",
+          "Entire population"
+        ],
+        correct: 1,
+        explanation: "In the lesson, e stands for margin of error, usually 0.05."
+      },
+      {
+        topic: "Sample Calculation",
+        question: "Using the lesson's example, if the population is 200 and the margin of error is 0.05, what sample size is obtained?",
+        answers: [
+          "100",
+          "120",
+          "133",
+          "200"
+        ],
+        correct: 2,
+        explanation: "The worked example in the PDF shows that a population of 200 with a 0.05 margin of error gives a sample size of 133."
+      },
+      {
+        topic: "Margin of Error",
+        question: "According to the chart in the lesson, which margin of error is most common in academic research?",
+        answers: [
+          "10%",
+          "5%",
+          "3%",
+          "1%"
+        ],
+        correct: 1,
+        explanation: "The chart states that 5% or 0.05 is the most common margin of error in academic research."
+      },
+      {
+        topic: "Probability Sampling",
+        question: "What is true about probability sampling methods?",
+        answers: [
+          "They do not give anyone a chance to be selected",
+          "They give every member of the population an equal or known chance of being selected",
+          "They are used only in qualitative studies",
+          "They are based only on personal preference"
+        ],
+        correct: 1,
+        explanation: "The lesson explains that probability sampling methods give every member an equal or known chance of selection."
+      },
+      {
+        topic: "Simple Random",
+        question: "Which sampling method gives every individual in the population an equal chance of being selected?",
+        answers: [
+          "Quota sampling",
+          "Convenience sampling",
+          "Simple random sampling",
+          "Purposive sampling"
+        ],
+        correct: 2,
+        explanation: "Simple random sampling is identified in the lesson as the most basic probability sampling method where each member has an equal chance."
+      },
+      {
+        topic: "Systematic",
+        question: "If the population is 300 and the desired sample is 100, what is the sampling interval k in systematic sampling?",
+        answers: [
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        correct: 1,
+        explanation: "The lesson gives this exact example: k = 300 / 100 = 3, meaning every 3rd student is selected."
+      },
+      {
+        topic: "Stratified",
+        question: "What happens in stratified sampling?",
+        answers: [
+          "The researcher selects only easy-to-reach respondents",
+          "The population is divided into smaller groups based on shared characteristics, then samples are selected from each group",
+          "Entire departments are always surveyed",
+          "Participants recruit all other participants"
+        ],
+        correct: 1,
+        explanation: "Stratified sampling divides the population into strata or groups with shared characteristics and then selects samples from each group."
+      },
+      {
+        topic: "Cluster",
+        question: "Which statement best describes cluster sampling?",
+        answers: [
+          "The researcher selects respondents at regular intervals from a list",
+          "The researcher divides the population into clusters and randomly selects whole clusters",
+          "The researcher chooses only experts",
+          "The researcher sets male and female targets only"
+        ],
+        correct: 1,
+        explanation: "Cluster sampling selects entire clusters, usually based on location or organizational grouping, rather than selecting individuals one by one."
+      },
+      {
+        topic: "Convenience",
+        question: "Which non-probability sampling method involves selecting respondents who are easily accessible or available?",
+        answers: [
+          "Convenience sampling",
+          "Snowball sampling",
+          "Stratified sampling",
+          "Systematic sampling"
+        ],
+        correct: 0,
+        explanation: "Convenience sampling means choosing participants who are easiest to access, like students currently in the computer laboratory."
+      },
+      {
+        topic: "Purposive",
+        question: "A study on capstone project development selects only 4th year IT students enrolled in Capstone courses. What sampling method is this?",
+        answers: [
+          "Simple random sampling",
+          "Quota sampling",
+          "Purposive sampling",
+          "Cluster sampling"
+        ],
+        correct: 2,
+        explanation: "The lesson gives this as an example of purposive sampling, where participants are selected because they meet specific study criteria."
+      },
+      {
+        topic: "Snowball",
+        question: "Which sampling method is useful when participants help recruit other respondents who meet the study criteria?",
+        answers: [
+          "Snowball sampling",
+          "Systematic sampling",
+          "Convenience sampling",
+          "Stratified sampling"
+        ],
+        correct: 0,
+        explanation: "Snowball sampling is used when existing participants help identify or recruit more participants who fit the study."
+      },
+      {
+        topic: "Quota",
+        question: "A researcher wants to survey 100 students with 50 male and 50 female students. Which method is being used?",
+        answers: [
+          "Cluster sampling",
+          "Quota sampling",
+          "Simple random sampling",
+          "Observation"
+        ],
+        correct: 1,
+        explanation: "Quota sampling sets required numbers for each subgroup and continues data collection until the quotas are met."
+      },
+      {
+        topic: "Questionnaire Design",
+        question: "What is one of the most important principles in questionnaire design according to the lesson?",
+        answers: [
+          "Each question should be unrelated to the objective",
+          "Each objective should have several survey questions that measure it",
+          "Every question must be open-ended",
+          "The questionnaire should change scales every section"
+        ],
+        correct: 1,
+        explanation: "The PDF emphasizes alignment with research objectives, meaning each objective should have several questions that measure it."
+      },
+      {
+        topic: "Likert Scale",
+        question: "What does a 5-point Likert Scale allow respondents to express?",
+        answers: [
+          "Their handwriting style",
+          "Their level of agreement or disagreement with a statement",
+          "Only yes or no answers",
+          "Their age group only"
+        ],
+        correct: 1,
+        explanation: "The lesson explains that a Likert Scale lets respondents express their level of agreement or disagreement with a statement."
+      },
+      {
+        topic: "Likert Writing",
+        question: "Which is the better way to write a Likert-scale item based on the lesson's guideline to ask only one idea per statement?",
+        answers: [
+          "The system is fast and easy to use.",
+          "The system is fast. / The system is easy to use.",
+          "Do you love this perfect system?",
+          "This system is the best, right?"
+        ],
+        correct: 1,
+        explanation: "The lesson says a statement should ask only one idea at a time. So 'The system is fast' and 'The system is easy to use' are better separate items."
+      }
+    ];
+
+    const startBtn = document.getElementById('startBtn');
+    const howBtn = document.getElementById('howBtn');
+    const howPanel = document.getElementById('howPanel');
+    const startScreen = document.getElementById('startScreen');
+    const gameWrap = document.getElementById('gameWrap');
+    const resultScreen = document.getElementById('resultScreen');
+    const questionText = document.getElementById('questionText');
+    const answersBox = document.getElementById('answersBox');
+    const feedbackBox = document.getElementById('feedbackBox');
+    const feedbackTitle = document.getElementById('feedbackTitle');
+    const feedbackText = document.getElementById('feedbackText');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const scoreValue = document.getElementById('scoreValue');
+    const livesValue = document.getElementById('livesValue');
+    const questionCounter = document.getElementById('questionCounter');
+    const progressFill = document.getElementById('progressFill');
+    const topicChip = document.getElementById('topicChip');
+    const statusText = document.getElementById('statusText');
+    const finalScore = document.getElementById('finalScore');
+    const resultHeading = document.getElementById('resultHeading');
+    const resultMessage = document.getElementById('resultMessage');
+    const correctCount = document.getElementById('correctCount');
+    const wrongCount = document.getElementById('wrongCount');
+    const playedCount = document.getElementById('playedCount');
+    const masteryText = document.getElementById('masteryText');
+
+    let currentIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let correct = 0;
+    let wrong = 0;
+    let locked = false;
+
+    function startGame() {
+      currentIndex = 0;
+      score = 0;
+      lives = 3;
+      correct = 0;
+      wrong = 0;
+      locked = false;
+
+      startScreen.classList.add('hidden');
+      resultScreen.classList.remove('active');
+      resultScreen.classList.add('hidden');
+      gameWrap.classList.remove('hidden');
+      gameWrap.classList.add('active');
+
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      locked = false;
+      feedbackBox.className = 'feedback';
+      nextBtn.classList.add('hidden');
+      statusText.textContent = 'Choose the best answer.';
+
+      const q = questions[currentIndex];
+      questionText.textContent = q.question;
+      topicChip.textContent = q.topic;
+      questionCounter.textContent = `${currentIndex + 1} / ${questions.length}`;
+      scoreValue.textContent = score;
+      livesValue.textContent = '❤'.repeat(lives) + '♡'.repeat(3 - lives);
+      progressFill.style.width = `${(currentIndex / questions.length) * 100}%`;
+
+      answersBox.innerHTML = '';
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer';
+        btn.innerHTML = `<small>${String.fromCharCode(65 + index)}.</small>${answer}`;
+        btn.addEventListener('click', () => selectAnswer(index));
+        answersBox.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(index) {
+      if (locked) return;
+      locked = true;
+      const q = questions[currentIndex];
+      const buttons = [...document.querySelectorAll('.answer')];
+      const isCorrect = index === q.correct;
+
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correct) btn.classList.add('correct');
+        if (i === index && !isCorrect) btn.classList.add('wrong');
+      });
+
+      if (isCorrect) {
+        score += 10;
+        correct += 1;
+        feedbackBox.className = 'feedback active good';
+        feedbackTitle.textContent = 'Correct!';
+        statusText.textContent = 'Nice work. You earned 10 points.';
+      } else {
+        lives -= 1;
+        wrong += 1;
+        feedbackBox.className = 'feedback active bad';
+        feedbackTitle.textContent = 'Not quite.';
+        statusText.textContent = lives > 0 ? 'You lost 1 life. Read the explanation and keep going.' : 'No lives left.';
+      }
+
+      scoreValue.textContent = score;
+      livesValue.textContent = '❤'.repeat(Math.max(lives, 0)) + '♡'.repeat(3 - Math.max(lives, 0));
+      feedbackText.textContent = q.explanation;
+
+      if (lives <= 0) {
+        nextBtn.textContent = 'See Results';
+      } else if (currentIndex === questions.length - 1) {
+        nextBtn.textContent = 'Finish Game';
+      } else {
+        nextBtn.textContent = 'Next Question';
+      }
+
+      nextBtn.classList.remove('hidden');
+      progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+    }
+
+    function nextQuestion() {
+      if (lives <= 0 || currentIndex >= questions.length - 1) {
+        showResults();
+        return;
+      }
+      currentIndex += 1;
+      renderQuestion();
+    }
+
+    function masteryLabel(percent) {
+      if (percent >= 90) return 'Expert';
+      if (percent >= 75) return 'Strong';
+      if (percent >= 60) return 'Developing';
+      return 'Needs Review';
+    }
+
+    function resultMessageByPercent(percent) {
+      if (percent >= 90) {
+        return 'Excellent. You have a strong grasp of Lesson 6, from data collection basics to sampling methods and Likert-scale design.';
+      }
+      if (percent >= 75) {
+        return 'Good job. You understand most of the lesson well. A quick review of formulas and sampling types will make you even stronger.';
+      }
+      if (percent >= 60) {
+        return 'Nice effort. You understand the main ideas, but a second pass through sample size, sampling methods, and questionnaire rules will help.';
+      }
+      return 'You started the learning journey. Review the lesson again, then replay the quiz to improve your score bit by bit.';
+    }
+
+    function showResults() {
+      const played = correct + wrong;
+      const percent = Math.round((score / (questions.length * 10)) * 100);
+
+      gameWrap.classList.remove('active');
+      gameWrap.classList.add('hidden');
+      resultScreen.classList.remove('hidden');
+      resultScreen.classList.add('active');
+
+      finalScore.textContent = `${score} / ${questions.length * 10}`;
+      correctCount.textContent = correct;
+      wrongCount.textContent = wrong;
+      playedCount.textContent = played;
+      masteryText.textContent = masteryLabel(percent);
+      resultHeading.textContent = lives <= 0 ? 'Game Over - Study and Try Again' : 'Quiz Complete';
+      resultMessage.textContent = resultMessageByPercent(percent);
+    }
+
+    howBtn.addEventListener('click', () => {
+      howPanel.classList.toggle('hidden');
+    });
+
+    startBtn.addEventListener('click', startGame);
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', startGame);
+    playAgainBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
